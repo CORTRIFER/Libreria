@@ -3,6 +3,8 @@
 
 Un'applicazione web elegante e interattiva per gestire la tua collezione personale di libri.
 
+### ⌨️ *Utilizzare al PC!*
+
 ## ✨ Caratteristiche
 
 - **Gestione Libreria**: Aggiungi e rimuovi libri dalla tua collezione
