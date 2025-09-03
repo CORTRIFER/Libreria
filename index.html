@@ -61,7 +61,7 @@
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            height: 400px; /* uniforme per tutti */
+            height: 400px;
             position: relative;
         }
         
@@ -70,24 +70,32 @@
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
         }
         
-        /* --- COPERTINA LIBRO UNIFORME --- */
         .book-cover {
-            flex: 0 0 60%; /* 60% del box riservato alla copertina */
+            flex: 0 0 60%;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #e0e0e0;
+            background: #f0f0f0;
             overflow: hidden;
+            position: relative;
         }
 
         .book-cover img {
             max-height: 100%;
             max-width: 100%;
             object-fit: contain;
+            transition: opacity 0.3s ease;
+        }
+        
+        .book-cover .no-cover {
+            color: #888;
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
         }
         
         .book-info {
-            flex: 1; /* riempie lo spazio rimanente */
+            flex: 1;
             padding: 12px;
             display: flex;
             flex-direction: column;
@@ -144,6 +152,7 @@
             justify-content: space-around;
             flex-wrap: wrap;
             gap: 20px;
+            margin-bottom: 20px;
         }
         
         .stat-box {
@@ -165,7 +174,6 @@
             display: flex;
             justify-content: center;
             gap: 15px;
-            margin-top: 20px;
             flex-wrap: wrap;
         }
         
@@ -179,6 +187,9 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            min-width: 160px;
+            flex: 1;
+            max-width: 200px;
         }
         
         button:hover {
@@ -210,7 +221,7 @@
             }
             
             .book-card {
-                height: 350px; /* più basso su mobile */
+                height: 350px;
             }
             
             .book-cover {
@@ -230,6 +241,7 @@
             button {
                 width: 100%;
                 max-width: 300px;
+                min-width: unset;
             }
         }
         
@@ -253,6 +265,10 @@
         
         .notification.remove {
             background: #F44336;
+        }
+        
+        .notification.warning {
+            background: #FF9800;
         }
         
         /* Modal per aggiungere libri */
@@ -333,6 +349,85 @@
         #cancelBtn:hover {
             background: #757575;
         }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .manual-cover {
+            margin-top: 15px;
+            padding: 10px;
+            border-top: 1px solid #eee;
+        }
+        
+        .manual-cover a {
+            color: #2575fc;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .manual-cover a:hover {
+            text-decoration: underline;
+        }
+        
+        .reset-btn {
+            background: #FF9800 !important;
+        }
+        
+        .reset-btn:hover {
+            background: #F57C00 !important;
+        }
+
+        .actions-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            flex: 1;
+            min-width: 160px;
+            max-width: 200px;
+        }
+		
+		
+		/* Bottone Annulla centrato e verde */
+		#chooseCoverModal .form-actions {
+			display: flex;
+			justify-content: center;   /* centra il bottone */
+			margin-top: 20px;          /* distanziamento dalle copertine */
+		}
+
+		#chooseCoverModal .form-actions button {
+			padding: 10px 20px;
+			font-size: 14px;
+			border-radius: 50px;       /* come gli altri bottoni */
+			background: #4CAF50;       /* stesso verde del bottone Aggiungi */
+			border: none;
+			color: white;
+			cursor: pointer;
+			font-weight: bold;
+			transition: all 0.3s ease;
+		}
+
+		#chooseCoverModal .form-actions button:hover {
+			background: #388E3C;       /* verde più scuro al passaggio del mouse */
+			transform: translateY(-2px);
+		}
+		
     </style>
 </head>
 <body>
@@ -345,22 +440,25 @@
         <div class="stats-container">
             <div class="stats">
                 <div class="stat-box">
-                    <span class="stat-number" id="totalBooks">0</span>
+                    <span class="stat-number" id="totalBooks">25</span>
                     <span>Libri totali</span>
                 </div>
                 <div class="stat-box">
-                    <span class="stat-number" id="ownedBooks">0</span>
+                    <span class="stat-number" id="ownedBooks">8</span>
                     <span>Libri posseduti</span>
                 </div>
                 <div class="stat-box">
-                    <span class="stat-number" id="toBuy">0</span>
+                    <span class="stat-number" id="toBuy">17</span>
                     <span>Da acquistare</span>
                 </div>
             </div>
             
             <div class="actions">
-                <button id="addBookBtn">Aggiungi Libro</button>
-                <button id="deleteSelectedBtn">Elimina Libro/i</button>
+                <div class="actions-row">
+                    <button id="addBookBtn" class="action-btn">Aggiungi Libro</button>
+                    <button id="deleteSelectedBtn" class="action-btn">Elimina Libro/i</button>
+                    <button id="resetLibraryBtn" class="action-btn reset-btn">Ripristina Libreria</button>
+                </div>
             </div>
         </div>
         
@@ -386,145 +484,465 @@
                     <label for="bookAuthor">Autore</label>
                     <input type="text" id="bookAuthor" required placeholder="Inserisci l'autore">
                 </div>
-                <div class="form-group">
-                    <label for="bookCover">URL Copertina (opzionale)</label>
-                    <input type="url" id="bookCover" placeholder="https://example.com/image.jpg">
-                </div>
                 <div class="form-actions">
                     <button type="button" id="cancelBtn">Annulla</button>
-                    <button type="submit">Aggiungi Libro</button>
+                    <button type="submit" id="submitBtn">Aggiungi Libro</button>
+                </div>
+                <div class="manual-cover">
+                    <small>Se la copertina non viene trovata automaticamente, potrai aggiungerla manualmente dopo.</small>
                 </div>
             </form>
         </div>
     </div>
 
-	<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <!-- Modal per modificare la copertina -->
+    <div class="modal-overlay" id="editCoverModal">
+        <div class="modal">
+            <h2>Modifica copertina</h2>
+            <div class="form-group">
+                <label for="coverUrl">URL della copertina</label>
+                <input type="url" id="coverUrl" placeholder="Incolla l'URL dell'immagine">
+            </div>
+            <div class="form-actions">
+                <button type="button" id="cancelEditCoverBtn">Annulla</button>
+                <button type="button" id="saveCoverBtn">Salva Copertina</button>
+            </div>
+        </div>
+    </div>
 	
-	<script>
-		function getBooks() {
-			const storedBooks = localStorage.getItem('libraryBooks');
-			return storedBooks ? JSON.parse(storedBooks) : [];
-		}
+	
+		<!-- Modal scelta copertina -->
+<div class="modal-overlay" id="chooseCoverModal">
+    <div class="modal">
+        <h2>Scegli una copertina</h2>
+        <div id="coverChoices" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-height: 400px; overflow-y: auto;"></div>
+        <div class="form-actions">
+            <button type="button" id="cancelChooseCoverBtn">Annulla</button>
+        </div>
+    </div>
+</div>
 
-		function saveBooks(books) {
-			localStorage.setItem('libraryBooks', JSON.stringify(books));
-			updateLastSaveTime();
-			showNotification();
-		}
 
-		function updateLastSaveTime() {
-			const now = new Date();
-			document.getElementById('lastSave').textContent = now.toLocaleTimeString('it-IT');
-		}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
+    <script>
+        // Immagine di fallback se non troviamo la copertina
+        const FALLBACK_COVER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'%3E%3Cpath d='M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z'/%3E%3C/svg%3E";
+        
+        // Database di copertine predefinite per libri italiani famosi
+        const PREDEFINED_COVERS = {
+            "se questo è un uomo primo levi": "https://m.media-amazon.com/images/I/81pN+woQKLL._AC_UF1000,1000_QL80_.jpg",
+            "il nome della rosa umberto eco": "https://m.media-amazon.com/images/I/71uXMdu53kL._AC_UF1000,1000_QL80_.jpg",
+            "il barone rampante italo calvino": "https://m.media-amazon.com/images/I/81WmJ+3X2TL._AC_UF1000,1000_QL80_.jpg",
+            "il gattopardo giuseppe tomasi di lampedusa": "https://m.media-amazon.com/images/I/81r+MdUJv6L._AC_UF1000,1000_QL80_.jpg",
+            "così parlò bellavista lucio de crescenzo": "https://m.media-amazon.com/images/I/71yVX+4qN5L._AC_UF1000,1000_QL80_.jpg",
+            "il fuoco gabriele d'annunzio": "https://m.media-amazon.com/images/I/81Q3K+31l2L._AC_UF1000,1000_QL80_.jpg"
+        };
+        
+        let currentEditingBookId = null;
 
-		function showNotification(message = "Dati salvati con successo!", type = "save") {
-			const notification = document.getElementById('notification');
-			notification.textContent = message;
-			notification.classList.toggle('remove', type === "remove");
-			notification.classList.add('show');
-			setTimeout(() => notification.classList.remove('show'), 3000);
-		}
+        function getBooks() {
+            try {
+                const storedBooks = localStorage.getItem('libraryBooks');
+                if (!storedBooks) return [];
+                
+                const books = JSON.parse(storedBooks);
+                
+                // Validazione: assicuriamoci che ogni libro abbia tutte le proprietà necessarie
+                return books.filter(book => 
+                    book && 
+                    typeof book.id === 'number' && 
+                    typeof book.title === 'string' && 
+                    typeof book.author === 'string'
+                ).map(book => {
+                    // Assicuriamoci che ogni libro abbia una copertina
+                    if (!book.cover) {
+                        book.cover = FALLBACK_COVER;
+                    }
+                    return book;
+                });
+            } catch (error) {
+                console.error("Errore nel recupero dei libri:", error);
+                showNotification("Errore nel caricamento della libreria", "warning");
+                return [];
+            }
+        }
 
-		function renderBooks() {
-			const books = getBooks();
-			const container = document.getElementById('bookContainer');
-			container.innerHTML = '';
+        function saveBooks(books) {
+            try {
+                localStorage.setItem('libraryBooks', JSON.stringify(books));
+                updateLastSaveTime();
+                showNotification();
+            } catch (error) {
+                console.error("Errore nel salvataggio dei libri:", error);
+                showNotification("Errore nel salvataggio dei dati", "warning");
+            }
+        }
 
-			books.forEach(book => {
-				const card = document.createElement('div');
-				card.className = 'book-card';
-				card.dataset.id = book.id;
-				card.innerHTML = `
-					<div class="book-cover">
-						<img src="${book.cover}" alt="${book.title}">
-					</div>
-					<div class="book-info">
-						<div class="book-title">${book.title}</div>
-						<div class="book-author">${book.author}</div>
-						<div class="checkbox-container">
-							<input type="checkbox" id="book-${book.id}" ${book.owned ? 'checked' : ''}>
-							<label for="book-${book.id}">Possiedo questo libro</label>
-						</div>
-						<div class="checkbox-container">
-							<input type="checkbox" class="delete-check" data-id="${book.id}">
-							<label>Rimuovere dalla libreria</label>
-						</div>
-					</div>
-				`;
+        function updateLastSaveTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('it-IT');
+            document.getElementById('lastSave').textContent = timeStr;
+            localStorage.setItem('lastSaveTime', timeStr);
+        }
 
-				// Checkbox "possiedo"
-				const checkbox = card.querySelector(`#book-${book.id}`);
-				checkbox.addEventListener('change', () => {
-					book.owned = checkbox.checked;
-					saveBooks(books);
-					updateStats();
-				});
+        function showNotification(message = "Dati salvati con successo!", type = "save") {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification';
+            
+            if (type === "remove") {
+                notification.classList.add('remove');
+            } else if (type === "warning") {
+                notification.classList.add('warning');
+            }
+            
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 3000);
+        }
 
-				container.appendChild(card);
-			});
+        function resetLibrary() {
+            if (confirm("Sei sicuro di voler ripristinare la libreria? Tutti i dati verranno cancellati.")) {
+                localStorage.removeItem('libraryBooks');
+                renderBooks();
+                showNotification("Libreria ripristinata", "remove");
+            }
+        }
 
-			updateStats();
+        async function findBookCover(title, author) {
+			
+			const key = `${title.toLowerCase()} ${author.toLowerCase()}`;
+			if (PREDEFINED_COVERS[key]) {
+				return PREDEFINED_COVERS[key];
+			}
 
-			// Inizializza SortableJS con effetti visivi
-			Sortable.create(container, {
-				animation: 200,
-				easing: "cubic-bezier(0.25, 1, 0.5, 1)",
-				chosenClass: 'chosen',   // card trascinata
-				ghostClass: 'ghost',     // posizione fantasma
-				onEnd: () => {
-					const newOrder = Array.from(container.children).map(card =>
-						books.find(b => b.id == card.dataset.id)
+			try {
+				const searchQuery = encodeURIComponent(`${title} ${author}`);
+
+				// 1️⃣ OpenLibrary con filtro lingua italiana
+				const response = await fetch(`https://openlibrary.org/search.json?q=${searchQuery}&limit=20`);
+				const data = await response.json();
+
+				if (data.docs && data.docs.length > 0) {
+					// Cerca prima solo edizioni italiane
+					const italianEdition = data.docs.find(doc =>
+						doc.language && doc.language.includes("ita") && doc.cover_i
 					);
-					saveBooks(newOrder);
+					if (italianEdition) {
+						return `https://covers.openlibrary.org/b/id/${italianEdition.cover_i}-M.jpg`;
+					}
+
+					// Se non trova nulla in italiano → prova comunque una copertina qualsiasi
+					const withCover = data.docs.find(doc => doc.cover_i);
+					if (withCover) {
+						return `https://covers.openlibrary.org/b/id/${withCover.cover_i}-M.jpg`;
+					}
 				}
-			});
-		}
 
-		function updateStats() {
-			const books = getBooks();
-			document.getElementById('totalBooks').textContent = books.length;
-			document.getElementById('ownedBooks').textContent = books.filter(b => b.owned).length;
-			document.getElementById('toBuy').textContent = books.filter(b => !b.owned).length;
-		}
+				// 2️⃣ Google Books con restrizione lingua italiana
+				const googleResponse = await fetch(
+					`https://www.googleapis.com/books/v1/volumes?q=${searchQuery}&langRestrict=it&maxResults=10`
+				);
+				const googleData = await googleResponse.json();
 
-		function removeSelectedBooks() {
-			const checkboxes = document.querySelectorAll('.delete-check:checked');
-			if (!checkboxes.length) return alert("Nessun libro selezionato.");
-			if (confirm(`Vuoi eliminare ${checkboxes.length} libri?`)) {
-				let books = getBooks();
-				const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
-				books = books.filter(b => !ids.includes(b.id));
-				saveBooks(books);
-				renderBooks();
-				showNotification("Libri eliminati!", "remove");
+				if (googleData.items && googleData.items.length > 0) {
+					for (const item of googleData.items) {
+						const info = item.volumeInfo;
+						if (info.language === "it" && info.imageLinks && info.imageLinks.thumbnail) {
+							return info.imageLinks.thumbnail.replace('http:', 'https:');
+						}
+					}
+					// Se non trova versione italiana, prendi comunque la prima
+					const fallbackItem = googleData.items.find(item => item.volumeInfo.imageLinks);
+					if (fallbackItem) {
+						return fallbackItem.volumeInfo.imageLinks.thumbnail.replace('http:', 'https:');
+					}
+				}
+
+				// 3️⃣ Se non trova nulla → fallback
+				return FALLBACK_COVER;
+			} catch (error) {
+				console.error("Errore nella ricerca della copertina:", error);
+				return FALLBACK_COVER;
 			}
 		}
 
-		function openAddBookModal() { document.getElementById('addBookModal').classList.add('active'); }
-		function closeAddBookModal() { document.getElementById('addBookModal').classList.remove('active'); document.getElementById('addBookForm').reset(); }
+		
+		async function searchBookCovers(title, author) {
+			const results = [];
+			const searchQuery = encodeURIComponent(`${title} ${author}`);
 
-		function addNewBook(e) {
-			e.preventDefault();
-			const title = document.getElementById('bookTitle').value;
-			const author = document.getElementById('bookAuthor').value;
-			const cover = document.getElementById('bookCover').value || "https://tse3.mm.bing.net/th/id/OIP.ChP8JT7rc3YL1gKtLEho9wAAAA?cb=thfvnext&rs=1&pid=ImgDetMain&o=7&rm=3";
-			const books = getBooks();
-			const newId = Math.max(...books.map(b => b.id), 0) + 1;
-			books.push({ id: newId, title, author, cover, owned: false });
-			saveBooks(books);
-			renderBooks();
-			closeAddBookModal();
-			showNotification("Libro aggiunto!");
+			try {
+				// 🔎 OpenLibrary
+				const response = await fetch(`https://openlibrary.org/search.json?q=${searchQuery}&limit=20`);
+				const data = await response.json();
+
+				if (data.docs && data.docs.length > 0) {
+					data.docs.forEach(doc => {
+						if (doc.cover_i) {
+							results.push(`https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`);
+						}
+					});
+				}
+
+				// 🔎 Google Books ITA
+				const googleResponse = await fetch(
+					`https://www.googleapis.com/books/v1/volumes?q=${searchQuery}&langRestrict=it&maxResults=10`
+				);
+				const googleData = await googleResponse.json();
+
+				if (googleData.items) {
+					googleData.items.forEach(item => {
+						const info = item.volumeInfo;
+						if (info.imageLinks && info.imageLinks.thumbnail) {
+							results.push(info.imageLinks.thumbnail.replace('http:', 'https:'));
+						}
+					});
+				}
+			} catch (err) {
+				console.error("Errore ricerca copertine:", err);
+			}
+
+			// Rimuovi duplicati
+			return [...new Set(results)];
+		}
+		
+		function showCoverChoices(covers, bookId) {
+			const modal = document.getElementById("chooseCoverModal");
+			const container = document.getElementById("coverChoices");
+			container.innerHTML = "";
+
+			if (covers.length === 0) {
+				container.innerHTML = "<p>Nessuna copertina trovata. Puoi inserirne una manualmente.</p>";
+			} else {
+				covers.forEach(url => {
+					const img = document.createElement("img");
+					img.src = url;
+					img.style.width = "100px";
+					img.style.height = "150px";
+					img.style.objectFit = "cover";
+					img.style.cursor = "pointer";
+					img.style.borderRadius = "6px";
+					img.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
+					img.addEventListener("click", () => {
+						const books = getBooks();
+						const idx = books.findIndex(b => b.id === bookId);
+						if (idx !== -1) {
+							books[idx].cover = url;
+							saveBooks(books);
+							renderBooks();
+						}
+						modal.classList.remove("active");
+						showNotification("Copertina aggiornata!");
+					});
+					container.appendChild(img);
+				});
+			}
+
+			modal.classList.add("active");
 		}
 
-		document.addEventListener('DOMContentLoaded', () => {
-			renderBooks();
-			document.getElementById('addBookBtn').addEventListener('click', openAddBookModal);
-			document.getElementById('cancelBtn').addEventListener('click', closeAddBookModal);
-			document.getElementById('addBookForm').addEventListener('submit', addNewBook);
-			document.getElementById('deleteSelectedBtn').addEventListener('click', removeSelectedBooks);
-		});
-	</script>
+
+        function renderBooks() {
+            const books = getBooks();
+            const container = document.getElementById('bookContainer');
+            container.innerHTML = '';
+
+            // Aggiorna le statistiche
+            document.getElementById('totalBooks').textContent = books.length;
+            document.getElementById('ownedBooks').textContent = books.filter(b => b.owned).length;
+            document.getElementById('toBuy').textContent = books.filter(b => !b.owned).length;
+
+            books.forEach(book => {
+                // Validazione aggiuntiva per evitare errori
+                if (!book || typeof book.id === 'undefined') {
+                    console.error("Libro non valido saltato:", book);
+                    return;
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.dataset.id = book.id;
+                
+                const coverContent = book.cover && book.cover !== FALLBACK_COVER 
+                    ? `<img src="${book.cover}" alt="${book.title}" onerror="this.src='${FALLBACK_COVER}'">`
+                    : `<div class="no-cover">Copertina non disponibile<br><small>Clicca per aggiungerne una</small></div>`;
+                
+                card.innerHTML = `
+                    <div class="book-cover" data-id="${book.id}">
+                        ${coverContent}
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-author">${book.author}</div>
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="book-${book.id}" ${book.owned ? 'checked' : ''}>
+                            <label for="book-${book.id}">Possiedo questo libro</label>
+                        </div>
+                        <div class="checkbox-container">
+                            <input type="checkbox" class="delete-check" id="delete-${book.id}" data-id="${book.id}">
+							<label for="delete-${book.id}">Rimuovere dalla libreria</label>
+                        </div>
+                    </div>
+                `;
+
+                // Checkbox "possiedo"
+                const checkbox = card.querySelector(`#book-${book.id}`);
+                checkbox.addEventListener('change', () => {
+                    book.owned = checkbox.checked;
+                    saveBooks(books);
+                    updateStats();
+                });
+
+                // Click sulla copertina per modificarla
+                const coverElement = card.querySelector('.book-cover');
+                coverElement.addEventListener('click', (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        openEditCoverModal(book.id);
+                    }
+                });
+
+                container.appendChild(card);
+            });
+
+            updateStats();
+
+            // Inizializza SortableJS solo se ci sono libri
+            if (books.length > 0) {
+                Sortable.create(container, {
+                    animation: 200,
+                    easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+                    chosenClass: 'chosen',
+                    ghostClass: 'ghost',
+                    onEnd: () => {
+                        const newOrder = Array.from(container.children).map(card => {
+                            const id = parseInt(card.dataset.id);
+                            return books.find(b => b.id === id);
+                        }).filter(book => book !== undefined); // Filtra eventuali valori undefined
+                        
+                        saveBooks(newOrder);
+                    }
+                });
+            }
+        }
+
+        function updateStats() {
+            const books = getBooks();
+            document.getElementById('totalBooks').textContent = books.length;
+            document.getElementById('ownedBooks').textContent = books.filter(b => b.owned).length;
+            document.getElementById('toBuy').textContent = books.filter(b => !b.owned).length;
+        }
+
+        function removeSelectedBooks() {
+            const checkboxes = document.querySelectorAll('.delete-check:checked');
+            if (!checkboxes.length) return alert("Nessun libro selezionato.");
+            if (confirm(`Vuoi eliminare ${checkboxes.length} libri?`)) {
+                let books = getBooks();
+                const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
+                books = books.filter(b => !ids.includes(b.id));
+                saveBooks(books);
+                renderBooks();
+                showNotification("Libri eliminati!", "remove");
+            }
+        }
+
+        function openAddBookModal() { 
+            document.getElementById('addBookModal').classList.add('active'); 
+        }
+        
+        function closeAddBookModal() { 
+            document.getElementById('addBookModal').classList.remove('active'); 
+            document.getElementById('addBookForm').reset();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Aggiungi Libro';
+        }
+        
+        function openEditCoverModal(bookId) {
+            currentEditingBookId = bookId;
+            document.getElementById('editCoverModal').classList.add('active');
+            document.getElementById('coverUrl').value = '';
+        }
+        
+        function closeEditCoverModal() {
+            document.getElementById('editCoverModal').classList.remove('active');
+            currentEditingBookId = null;
+        }
+        
+        function saveCover() {
+            const coverUrl = document.getElementById('coverUrl').value;
+            if (!coverUrl) return;
+            
+            const books = getBooks();
+            const bookIndex = books.findIndex(b => b.id === currentEditingBookId);
+            
+            if (bookIndex !== -1) {
+                books[bookIndex].cover = coverUrl;
+                saveBooks(books);
+                renderBooks();
+                closeEditCoverModal();
+                showNotification("Copertina aggiornata!");
+            }
+        }
+
+
+        async function addNewBook(e) {
+			e.preventDefault();
+
+			const title = document.getElementById('bookTitle').value;
+			const author = document.getElementById('bookAuthor').value;
+			const submitBtn = document.getElementById('submitBtn');
+
+			submitBtn.disabled = true;
+			submitBtn.innerHTML = '<span class="loading"></span> Ricerca copertine...';
+
+			try {
+				const books = getBooks();
+				const newId = books.length > 0 ? Math.max(...books.map(b => b.id)) + 1 : 1;
+
+				const newBook = { id: newId, title, author, cover: FALLBACK_COVER, owned: false };
+				books.push(newBook);
+				saveBooks(books);
+				renderBooks();
+
+				// Cerca copertine e mostra la scelta
+				const covers = await searchBookCovers(title, author);
+				showCoverChoices(covers, newId);
+
+				closeAddBookModal();
+				showNotification("Libro aggiunto!");
+			} catch (error) {
+				console.error("Errore nell'aggiunta del libro:", error);
+				showNotification("Errore durante l'aggiunta del libro", "warning");
+				submitBtn.disabled = false;
+				submitBtn.innerHTML = 'Aggiungi Libro';
+			}
+		}
+
+		
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderBooks();
+            document.getElementById('addBookBtn').addEventListener('click', openAddBookModal);
+            document.getElementById('cancelBtn').addEventListener('click', closeAddBookModal);
+            document.getElementById('addBookForm').addEventListener('submit', addNewBook);
+            document.getElementById('deleteSelectedBtn').addEventListener('click', removeSelectedBooks);
+            document.getElementById('resetLibraryBtn').addEventListener('click', resetLibrary);
+			
+			document.getElementById("cancelChooseCoverBtn").addEventListener("click", () => {
+				document.getElementById("chooseCoverModal").classList.remove("active");
+			});
+            
+            // Gestione modale modifica copertina
+            document.getElementById('cancelEditCoverBtn').addEventListener('click', closeEditCoverModal);
+            document.getElementById('saveCoverBtn').addEventListener('click', saveCover);
+            
+            // Aggiorna l'ora dell'ultimo salvataggio al caricamento
+            const lastSave = localStorage.getItem('lastSaveTime');
+            if (lastSave) {
+                document.getElementById('lastSave').textContent = lastSave;
+            }
+        });
+    </script>
 </body>
 </html>
-
