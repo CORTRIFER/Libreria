@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libreria - Diario di una Schiappa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .book-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 400px; /* uniforme per tutti */
+            position: relative;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* --- COPERTINA LIBRO UNIFORME --- */
+        .book-cover {
+            flex: 0 0 60%; /* 60% del box riservato alla copertina */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #e0e0e0;
+            overflow: hidden;
+        }
+
+        .book-cover img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        
+        .book-info {
+            flex: 1; /* riempie lo spazio rimanente */
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .book-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 16px;
+            line-height: 1.3;
+        }
+        
+        .book-author {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            padding: 3px 0;
+        }
+        
+        .checkbox-container label {
+            margin-left: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #4CAF50;
+        }
+        
+        .stats-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .stat-box {
+            padding: 15px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #6a89cc 0%, #4a69bd 100%);
+            color: white;
+            min-width: 150px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            background: #4CAF50;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            background: #388E3C;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        #deleteSelectedBtn {
+            background: #F44336;
+        }
+        
+        #deleteSelectedBtn:hover {
+            background: #D32F2F;
+        }
+        
+        .save-status {
+            text-align: center;
+            color: white;
+            margin-top: 16px;
+            font-size: 18px;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 768px) {
+            .books-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 15px;
+            }
+            
+            .book-card {
+                height: 350px; /* più basso su mobile */
+            }
+            
+            .book-cover {
+                flex: 0 0 55%;
+            }
+            
+            .stats {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.remove {
+            background: #F44336;
+        }
+        
+        /* Modal per aggiungere libri */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transform: translateY(-50px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+        
+        .modal h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #2575fc;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        
+        .form-actions button {
+            flex: 1;
+        }
+        
+        #cancelBtn {
+            background: #9e9e9e;
+        }
+        
+        #cancelBtn:hover {
+            background: #757575;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Libreria Personale</h1>
+            <p class="subtitle">Aggiungi/Rimuovi Libri e Segna i Libri che Possiedi</p>
+        </header>
+        
+        <div class="stats-container">
+            <div class="stats">
+                <div class="stat-box">
+                    <span class="stat-number" id="totalBooks">0</span>
+                    <span>Libri totali</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number" id="ownedBooks">0</span>
+                    <span>Libri posseduti</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number" id="toBuy">0</span>
+                    <span>Da acquistare</span>
+                </div>
+            </div>
+            
+            <div class="actions">
+                <button id="addBookBtn">Aggiungi Libro</button>
+                <button id="deleteSelectedBtn">Elimina Libro/i</button>
+            </div>
+        </div>
+        
+        <div class="books-grid" id="bookContainer"></div>
+        
+        <div class="save-status" id="saveStatus">
+            Ultimo salvataggio: <span id="lastSave">-</span>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">Dati salvati con successo!</div>
+    
+    <!-- Modal per aggiungere libri -->
+    <div class="modal-overlay" id="addBookModal">
+        <div class="modal">
+            <h2>Aggiungi un nuovo libro</h2>
+            <form id="addBookForm">
+                <div class="form-group">
+                    <label for="bookTitle">Titolo del libro</label>
+                    <input type="text" id="bookTitle" required placeholder="Inserisci il titolo">
+                </div>
+                <div class="form-group">
+                    <label for="bookAuthor">Autore</label>
+                    <input type="text" id="bookAuthor" required placeholder="Inserisci l'autore">
+                </div>
+                <div class="form-group">
+                    <label for="bookCover">URL Copertina (opzionale)</label>
+                    <input type="url" id="bookCover" placeholder="https://example.com/image.jpg">
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancelBtn">Annulla</button>
+                    <button type="submit">Aggiungi Libro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+	<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+	
+	<script>
+		function getBooks() {
+			const storedBooks = localStorage.getItem('libraryBooks');
+			return storedBooks ? JSON.parse(storedBooks) : [];
+		}
+
+		function saveBooks(books) {
+			localStorage.setItem('libraryBooks', JSON.stringify(books));
+			updateLastSaveTime();
+			showNotification();
+		}
+
+		function updateLastSaveTime() {
+			const now = new Date();
+			document.getElementById('lastSave').textContent = now.toLocaleTimeString('it-IT');
+		}
+
+		function showNotification(message = "Dati salvati con successo!", type = "save") {
+			const notification = document.getElementById('notification');
+			notification.textContent = message;
+			notification.classList.toggle('remove', type === "remove");
+			notification.classList.add('show');
+			setTimeout(() => notification.classList.remove('show'), 3000);
+		}
+
+		function renderBooks() {
+			const books = getBooks();
+			const container = document.getElementById('bookContainer');
+			container.innerHTML = '';
+
+			books.forEach(book => {
+				const card = document.createElement('div');
+				card.className = 'book-card';
+				card.dataset.id = book.id;
+				card.innerHTML = `
+					<div class="book-cover">
+						<img src="${book.cover}" alt="${book.title}">
+					</div>
+					<div class="book-info">
+						<div class="book-title">${book.title}</div>
+						<div class="book-author">${book.author}</div>
+						<div class="checkbox-container">
+							<input type="checkbox" id="book-${book.id}" ${book.owned ? 'checked' : ''}>
+							<label for="book-${book.id}">Possiedo questo libro</label>
+						</div>
+						<div class="checkbox-container">
+							<input type="checkbox" class="delete-check" data-id="${book.id}">
+							<label>Rimuovere dalla libreria</label>
+						</div>
+					</div>
+				`;
+
+				// Checkbox "possiedo"
+				const checkbox = card.querySelector(`#book-${book.id}`);
+				checkbox.addEventListener('change', () => {
+					book.owned = checkbox.checked;
+					saveBooks(books);
+					updateStats();
+				});
+
+				container.appendChild(card);
+			});
+
+			updateStats();
+
+			// Inizializza SortableJS con effetti visivi
+			Sortable.create(container, {
+				animation: 200,
+				easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+				chosenClass: 'chosen',   // card trascinata
+				ghostClass: 'ghost',     // posizione fantasma
+				onEnd: () => {
+					const newOrder = Array.from(container.children).map(card =>
+						books.find(b => b.id == card.dataset.id)
+					);
+					saveBooks(newOrder);
+				}
+			});
+		}
+
+		function updateStats() {
+			const books = getBooks();
+			document.getElementById('totalBooks').textContent = books.length;
+			document.getElementById('ownedBooks').textContent = books.filter(b => b.owned).length;
+			document.getElementById('toBuy').textContent = books.filter(b => !b.owned).length;
+		}
+
+		function removeSelectedBooks() {
+			const checkboxes = document.querySelectorAll('.delete-check:checked');
+			if (!checkboxes.length) return alert("Nessun libro selezionato.");
+			if (confirm(`Vuoi eliminare ${checkboxes.length} libri?`)) {
+				let books = getBooks();
+				const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
+				books = books.filter(b => !ids.includes(b.id));
+				saveBooks(books);
+				renderBooks();
+				showNotification("Libri eliminati!", "remove");
+			}
+		}
+
+		function openAddBookModal() { document.getElementById('addBookModal').classList.add('active'); }
+		function closeAddBookModal() { document.getElementById('addBookModal').classList.remove('active'); document.getElementById('addBookForm').reset(); }
+
+		function addNewBook(e) {
+			e.preventDefault();
+			const title = document.getElementById('bookTitle').value;
+			const author = document.getElementById('bookAuthor').value;
+			const cover = document.getElementById('bookCover').value || "https://tse3.mm.bing.net/th/id/OIP.ChP8JT7rc3YL1gKtLEho9wAAAA?cb=thfvnext&rs=1&pid=ImgDetMain&o=7&rm=3";
+			const books = getBooks();
+			const newId = Math.max(...books.map(b => b.id), 0) + 1;
+			books.push({ id: newId, title, author, cover, owned: false });
+			saveBooks(books);
+			renderBooks();
+			closeAddBookModal();
+			showNotification("Libro aggiunto!");
+		}
+
+		document.addEventListener('DOMContentLoaded', () => {
+			renderBooks();
+			document.getElementById('addBookBtn').addEventListener('click', openAddBookModal);
+			document.getElementById('cancelBtn').addEventListener('click', closeAddBookModal);
+			document.getElementById('addBookForm').addEventListener('submit', addNewBook);
+			document.getElementById('deleteSelectedBtn').addEventListener('click', removeSelectedBooks);
+		});
+	</script>
+</body>
+</html>
