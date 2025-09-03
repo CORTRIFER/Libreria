@@ -15,16 +15,16 @@ Un'applicazione web elegante e interattiva per gestire la tua collezione persona
 ## 🎯 Utilizzo
 
 ### Aggiungere un Libro
-1. Clicca "Aggiungi Libro"
+1. Clicca **"Aggiungi Libro"**
 2. Inserisci titolo, autore e opzionalmente l'URL della copertina
 3. Conferma con "Aggiungi Libro"
 
 ### Gestire il Possesso
-- Spunta "Possiedo questo libro" sotto ogni libro
+- Spunta **"Possiedo questo libro"** sotto ogni libro
 
 ### Eliminare Libri
-1. Seleziona "Rimuovere dalla libreria" per i libri da eliminare
-2. Clicca "Elimina Libro/i"
+1. Seleziona **"Rimuovere dalla libreria"** per i libri da eliminare
+2. Clicca **"Elimina Libro/i"**
 
 ### Riordinare
 - Trascina i libri nella posizione desiderata
