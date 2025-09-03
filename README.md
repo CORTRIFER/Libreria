@@ -7,9 +7,11 @@ Un'applicazione web elegante e interattiva per gestire la tua collezione persona
 
 ## ✨ Caratteristiche
 
-- **Gestione Libreria**: Aggiungi e rimuovi libri dalla tua collezione
+- **Gestione Libreria**: Aggiungi, Rimuovi e Resetta libri dalla tua collezione
 - **Tracking Possesso**: Segna quali libri possiedi e quali devi acquistare
 - **Statistiche Live**: Contatori aggiornati in tempo reale
+- **Copertina Automatica**: Puoi scegliere tra una serie di copertine proposte
+- **Modifiche Copertine**: C'è la possibilità di modificare e inserire manualmente le copertine
 - **Drag & Drop**: Riordina i libri con un'interfaccia intuitiva
 - **Salvataggio Automatico**: Dati persistiti nel localStorage
 - **Notifiche**: Feedback visivo per tutte le operazioni
@@ -18,8 +20,9 @@ Un'applicazione web elegante e interattiva per gestire la tua collezione persona
 
 ### Aggiungere un Libro
 1. Clicca **"Aggiungi Libro"**
-2. Inserisci titolo, autore e opzionalmente l'URL della copertina
-3. Conferma con "Aggiungi Libro"
+2. Inserisci titolo, autore
+3. Vengono generate in automatico una serie di copertine
+4. Conferma selezionando la copertina che si preferisce
 
 ### Gestire il Possesso
 - Spunta **"Possiedo questo libro"** sotto ogni libro
@@ -27,6 +30,10 @@ Un'applicazione web elegante e interattiva per gestire la tua collezione persona
 ### Eliminare Libri
 1. Seleziona **"Rimuovere dalla libreria"** per i libri da eliminare
 2. Clicca **"Elimina Libro/i"**
+
+### Resettare Libri
+1. Seleziona **"Ripristina Libreria"** per resettare tutta la libreria
+2. Conferma di voler ripristinare la Libreria
 
 ### Riordinare
 - Trascina i libri nella posizione desiderata
